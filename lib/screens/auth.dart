@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:http/http.dart' as http;
+import 'dart:io' show Platform;
 import 'dart:convert';
+import 'package:book_recognizer_frontend/screens/camera.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -22,8 +23,34 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredUsername = '';
   var _enteredPassword = '';
 
+  String getBackendUrl() {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  Future<void> _navigateToPreferences() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CameraScreen(),
+      ),
+    );
+  }
+
   void _submit() async {
     final isValid = _form.currentState!.validate();
+    final backendUrl = getBackendUrl();
 
     if (!isValid) {
       return;
@@ -32,9 +59,28 @@ class _AuthScreenState extends State<AuthScreen> {
     _form.currentState!.save();
 
     if (_isLogin) {
-      // log users in
+      // Log users in
+      var response = await http.post(Uri.parse('$backendUrl/auth/token/'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'username': _enteredUsername,
+            'password': _enteredPassword,
+          }));
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 307) {
+        await _navigateToPreferences();
+      } else {
+        String errorMessage;
+        if (response.statusCode == 401) {
+          errorMessage = 'Login failed. Please try again.';
+          _showErrorSnackBar(errorMessage);
+        }
+      }
     } else {
-      var response = await http.post(Uri.parse('http://localhost:8000/auth/'),
+      var response = await http.post(Uri.parse('$backendUrl/auth/'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'username': _enteredUsername,
