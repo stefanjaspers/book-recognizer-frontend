@@ -31,6 +31,15 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color.fromARGB(255, 71, 200, 71),
+      ),
+    );
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -60,17 +69,21 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (_isLogin) {
       // Log users in
-      var response = await http.post(Uri.parse('$backendUrl/auth/token/'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'username': _enteredUsername,
-            'password': _enteredPassword,
-          }));
+      var request =
+          http.MultipartRequest('POST', Uri.parse('$backendUrl/auth/token'));
+      request.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      request.fields['username'] = _enteredUsername;
+      request.fields['password'] = _enteredPassword;
+      request.fields['grant_type'] = 'password';
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
-      if (response.statusCode == 307) {
+      if (response.statusCode == 200) {
+        _showSuccessSnackBar('Logged in successfully.');
         await _navigateToPreferences();
       } else {
         String errorMessage;

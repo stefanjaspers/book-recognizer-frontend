@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:book_recognizer_frontend/screens/results.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -15,6 +16,36 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   File? _image;
+  bool _isLoading = false;
+
+  String getBackendUrl() {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
+  }
+
+  Future<void> _navigateToResults(String responseBody) async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ResultsScreen(responseBody: responseBody),
+      ),
+    );
+  }
+
+  Future<void> _getImageFromGallery() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
 
   Future<void> _getImage() async {
     final picker = ImagePicker();
@@ -35,8 +66,14 @@ class _CameraScreenState extends State<CameraScreen> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    final backendUrl = getBackendUrl();
+
     // Replace with your backend API URL
-    final String apiUrl = 'http://your-backend-url.com/upload-image/';
+    final String apiUrl = '$backendUrl/books/recognize';
 
     // Prepare the image file for upload
     final imageBytes = await _image!.readAsBytes();
@@ -49,30 +86,52 @@ class _CameraScreenState extends State<CameraScreen> {
       body: json.encode({'image': base64Image}),
     );
 
+    setState(() {
+      _isLoading = false;
+    });
+
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      _navigateToResults(response.body);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Camera Screen')),
+      appBar: AppBar(
+        title: const Text('Camera Screen'),
+        automaticallyImplyLeading: false,
+      ),
       body: Center(
-        child: _image == null
-            ? const Text('No image selected.')
-            : Image.file(_image!),
+        child: _isLoading
+            ? const CircularProgressIndicator() // Show the loading indicator when _isLoading is true
+            : _image == null
+                ? const Text('No image selected.')
+                : Image.file(_image!),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getImage,
+        onPressed: _isLoading
+            ? null
+            : _getImage, // Disable the button when _isLoading is true
         tooltip: 'Pick Image',
         child: const Icon(Icons.add_a_photo),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             TextButton(
-              onPressed: _sendImageToBackend,
+              onPressed: _isLoading
+                  ? null
+                  : _getImageFromGallery, // Disable the button when _isLoading is true
+              child: const Text('Select from Gallery'),
+            ),
+            TextButton(
+              onPressed:
+                  _image == null || _isLoading ? null : _sendImageToBackend,
               child: const Text('Send Image'),
             ),
           ],
