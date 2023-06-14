@@ -28,21 +28,23 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _navigateToResults(String responseBody) async {
-    final List<dynamic> responseList = json.decode(responseBody);
+    final Map<String, dynamic> responseMap = json.decode(responseBody);
 
     List<Book> books = [];
 
-    for (final responseItem in responseList) {
-      final Map<String, dynamic> decodedJson = responseItem;
-      final List<dynamic> items = decodedJson['items'];
-
-      for (var bookJson in items) {
+    if (responseMap.containsKey('items')) {
+      for (final item in responseMap['items']) {
         final Map<String, dynamic> volumeInfo =
-            (bookJson as Map<String, dynamic>)['volumeInfo'];
-        Book book = Book.fromJson(volumeInfo);
+            item['volumeInfo'] as Map<String, dynamic>;
+        final Map<String, dynamic> saleInfo =
+            item['saleInfo'] as Map<String, dynamic>;
+        Book book = Book.fromJson(volumeInfo, saleInfo);
         books.add(book);
       }
     }
+
+    print(
+        'Number of books created: ${books.length}'); // Add this line to check number of books created
 
     Navigator.of(context).push(
       MaterialPageRoute(
