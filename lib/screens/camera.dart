@@ -36,15 +36,12 @@ class _CameraScreenState extends State<CameraScreen> {
       final Map<String, dynamic> decodedJson = responseItem;
       final List<dynamic> items = decodedJson['items'];
 
-      print('Response List Length: ${responseList.length}');
-      print('First Item in the List: ${responseList[0]}');
-
-      items.forEach((bookJson) {
+      for (var bookJson in items) {
         final Map<String, dynamic> volumeInfo =
             (bookJson as Map<String, dynamic>)['volumeInfo'];
         Book book = Book.fromJson(volumeInfo);
         books.add(book);
-      });
+      }
     }
 
     Navigator.of(context).push(
