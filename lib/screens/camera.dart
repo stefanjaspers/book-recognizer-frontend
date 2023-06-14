@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:book_recognizer_frontend/models/book.dart';
 import 'package:book_recognizer_frontend/screens/results.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,9 +28,28 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _navigateToResults(String responseBody) async {
+    final List<dynamic> responseList = json.decode(responseBody);
+
+    List<Book> books = [];
+
+    for (final responseItem in responseList) {
+      final Map<String, dynamic> decodedJson = responseItem;
+      final List<dynamic> items = decodedJson['items'];
+
+      print('Response List Length: ${responseList.length}');
+      print('First Item in the List: ${responseList[0]}');
+
+      items.forEach((bookJson) {
+        final Map<String, dynamic> volumeInfo =
+            (bookJson as Map<String, dynamic>)['volumeInfo'];
+        Book book = Book.fromJson(volumeInfo);
+        books.add(book);
+      });
+    }
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ResultsScreen(responseBody: responseBody),
+        builder: (context) => ResultsScreen(books: books),
       ),
     );
   }
@@ -90,9 +110,6 @@ class _CameraScreenState extends State<CameraScreen> {
       _isLoading = false;
     });
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
     if (response.statusCode == 200) {
       _navigateToResults(response.body);
     }
@@ -107,7 +124,14 @@ class _CameraScreenState extends State<CameraScreen> {
       ),
       body: Center(
         child: _isLoading
-            ? const CircularProgressIndicator() // Show the loading indicator when _isLoading is true
+            ? const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Recognizing books - Please wait.'),
+                ],
+              )
             : _image == null
                 ? const Text('No image selected.')
                 : Image.file(_image!),
@@ -117,6 +141,8 @@ class _CameraScreenState extends State<CameraScreen> {
             ? null
             : _getImage, // Disable the button when _isLoading is true
         tooltip: 'Pick Image',
+        foregroundColor:
+            _isLoading ? Colors.grey : Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add_a_photo),
       ),
       bottomNavigationBar: BottomAppBar(

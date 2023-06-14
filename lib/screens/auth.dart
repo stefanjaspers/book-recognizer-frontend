@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io' show Platform;
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:book_recognizer_frontend/screens/preferences.dart';
 import 'package:book_recognizer_frontend/screens/camera.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  const AuthScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -52,9 +55,28 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _navigateToPreferences() async {
     Navigator.of(context).push(
       MaterialPageRoute(
+        builder: (context) => const PreferencesScreen(),
+      ),
+    );
+  }
+
+  Future<void> _navigateToCamera() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
         builder: (context) => const CameraScreen(),
       ),
     );
+  }
+
+  Future<bool> _hasPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? preferences = prefs.getStringList('book_preferences');
+    return preferences != null && preferences.isNotEmpty;
+  }
+
+  Future<void> _saveEmptyPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('book_preferences', []);
   }
 
   void _submit() async {
@@ -83,28 +105,70 @@ class _AuthScreenState extends State<AuthScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        _showSuccessSnackBar('Logged in successfully.');
-        await _navigateToPreferences();
+        bool hasPreferences = await _hasPreferences();
+
+        if (!hasPreferences) {
+          _showSuccessSnackBar(
+              'Logged in for the first time. Please set your preferences.');
+          await _navigateToPreferences();
+        } else {
+          _showSuccessSnackBar('Logged in successfully.');
+          await _navigateToCamera();
+        }
       } else {
         String errorMessage;
         if (response.statusCode == 401) {
           errorMessage = 'Login failed. Please try again.';
-          _showErrorSnackBar(errorMessage);
+        } else {
+          errorMessage = 'Unknown error occurred while logging in.';
         }
+
+        _showErrorSnackBar(errorMessage);
       }
     } else {
-      var response = await http.post(Uri.parse('$backendUrl/auth/'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'username': _enteredUsername,
-            'password': _enteredPassword,
-            'first_name': _enteredFirstName,
-            'last_name': _enteredLastName,
-            'book_preferences': <String>[]
-          }));
+      // Register new user
+      var response = await http.post(
+        Uri.parse('$backendUrl/auth/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': _enteredUsername,
+          'password': _enteredPassword,
+          'first_name': _enteredFirstName,
+          'last_name': _enteredLastName,
+          'book_preferences': <String>[],
+        }),
+      );
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          await _saveEmptyPreferences(); // Add this line
+          _showSuccessSnackBar(
+              'Account created successfully. Please log in to continue.');
+          Future.delayed(Duration.zero, () {
+            setState(() {
+              _isLogin = true;
+            });
+          });
+        }
+      } else {
+        String errorMessage = 'Unknown error occurred while creating account.';
+        if (response.statusCode == 400) {
+          final jsonResponse = json.decode(response.body);
+          if (jsonResponse.containsKey('username')) {
+            final usernameError = jsonResponse['username'][0];
+            errorMessage = 'Username: $usernameError';
+          } else if (jsonResponse.containsKey('password')) {
+            final passwordError = jsonResponse['password'][0];
+            errorMessage = 'Password: $passwordError';
+          }
+        } else if (response.statusCode == 500) {
+          errorMessage = 'Server Error: please try again later';
+        }
+        _showErrorSnackBar(errorMessage);
+      }
     }
   }
 
