@@ -2,6 +2,10 @@ import 'package:book_recognizer_frontend/screens/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:book_recognizer_frontend/providers/genres_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io' show Platform;
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -17,12 +21,21 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   String _searchQuery = '';
+  final storage = const FlutterSecureStorage();
 
   List<String> get _filteredGenres {
     return genres
         .where(
             (genre) => genre.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
+  }
+
+  String getBackendUrl() {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
   }
 
   Future<void> _savePreferences() async {
@@ -36,19 +49,43 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       return;
     }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('book_preferences', _selectedGenres.toList());
-    _scaffoldMessengerKey.currentState!.showSnackBar(
-      const SnackBar(
-        content: Text('Preferences saved successfully.'),
-        backgroundColor: Color.fromARGB(255, 71, 200, 71),
-      ),
-    );
+    // Retrieve the Bearer token
+    String? token = await storage.read(key: 'access_token');
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CameraScreen()),
-    );
+    if (token != null) {
+      final backendUrl = getBackendUrl();
+
+      // Send POST request with the Bearer token and selected preferences
+      var response = await http.post(
+        Uri.parse('$backendUrl/user/book_preferences'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({'preferences': _selectedGenres.toList()}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Handle successful response
+        _scaffoldMessengerKey.currentState!.showSnackBar(
+          const SnackBar(
+            content: Text('Preferences saved successfully.'),
+            backgroundColor: Color.fromARGB(255, 71, 200, 71),
+          ),
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CameraScreen()),
+        );
+      } else {
+        // Handle error response
+        // Show an error message or perform other actions as needed
+      }
+    } else {
+      // Handle the case when the token is not available
+      // Show an error message or navigate to the login screen
+    }
   }
 
   @override

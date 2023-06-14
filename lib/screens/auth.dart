@@ -6,6 +6,7 @@ import 'dart:io' show Platform;
 import 'package:book_recognizer_frontend/screens/preferences.dart';
 import 'package:book_recognizer_frontend/screens/camera.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -18,6 +19,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _form = GlobalKey<FormState>();
+  final storage = const FlutterSecureStorage();
 
   var _isLogin = true;
 
@@ -105,6 +107,10 @@ class _AuthScreenState extends State<AuthScreen> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
+        Map<String, dynamic> responseBody = json.decode(response.body);
+        String accessToken = responseBody['access_token'];
+        await storage.write(key: 'access_token', value: accessToken);
+
         bool hasPreferences = await _hasPreferences();
 
         if (!hasPreferences) {
