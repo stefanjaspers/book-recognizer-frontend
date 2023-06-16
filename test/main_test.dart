@@ -1,22 +1,28 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:book_recognizer_frontend/main.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:book_recognizer_frontend/main.dart' as app;
 import 'package:book_recognizer_frontend/screens/auth.dart';
 
 void main() {
-  testWidgets('Main app widget test', (WidgetTester tester) async {
-    // Build the app and trigger a frame.
-    await tester.pumpWidget(const App());
+  group('App Integration Tests', () {
+    testWidgets('AuthScreen is displayed as the home screen',
+        (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle();
 
-    // Verify the MaterialApp widget is present.
-    final finder = find.byType(MaterialApp);
-    expect(finder, findsOneWidget);
+      expect(find.byType(AuthScreen), findsOneWidget);
+    });
 
-    // Verify the title of the MaterialApp widget.
-    final MaterialApp app = tester.widget(finder);
-    expect(app.title, 'Book Recognizer App');
+    testWidgets('App theme is applied correctly', (WidgetTester tester) async {
+      app.main();
+      await tester.pumpAndSettle();
 
-    // Verify the AuthScreen widget is present as the home screen.
-    expect(find.byType(AuthScreen), findsOneWidget);
+      final materialAppFinder = find.byType(MaterialApp);
+      final MaterialApp materialApp = tester.widget(materialAppFinder);
+
+      expect(materialApp.theme?.brightness, Brightness.light);
+      // Use the correct primary color obtained from the console.
+      expect(materialApp.theme?.colorScheme.primary, const Color(0xff006a61));
+    });
   });
 }

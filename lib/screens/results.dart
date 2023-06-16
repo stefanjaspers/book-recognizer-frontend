@@ -5,9 +5,7 @@ import 'package:book_recognizer_frontend/screens/book_details.dart';
 class ResultsScreen extends StatelessWidget {
   final List<Book> books;
 
-  ResultsScreen({super.key, required this.books}) {
-    print("Received books: ${books.length}");
-  }
+  const ResultsScreen({super.key, required this.books});
 
   @override
   Widget build(BuildContext context) {
