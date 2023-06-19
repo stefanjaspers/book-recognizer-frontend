@@ -1,28 +1,33 @@
 class Book {
   final String title;
-  final String subtitle;
   final List<String> authors;
   final List<String> categories;
   final String thumbnail;
+  final String description;
+  final bool isEbook;
+  final String buyLink;
 
-  Book({
-    required this.title,
-    required this.subtitle,
-    required this.authors,
-    required this.categories,
-    required this.thumbnail,
-  });
+  Book(
+      {required this.title,
+      required this.authors,
+      required this.categories,
+      required this.thumbnail,
+      required this.description,
+      required this.isEbook,
+      required this.buyLink});
 
-  factory Book.fromJson(Map<String, dynamic> json) {
+  factory Book.fromJson(
+      Map<String, dynamic> volumeInfo, Map<String, dynamic> saleInfo) {
     return Book(
-      title: json['title'],
-      subtitle: json['subtitle'] ??
-          '', // Subtitle might not be present for all books.
-      authors: List<String>.from(json['authors'] ?? []),
-      categories: List<String>.from(json['categories'] ?? []),
-      thumbnail: json['imageLinks'] != null
-          ? json['imageLinks']['thumbnail']
-          : '', // ImageLinks might not be present for all books.
+      title: volumeInfo['title'],
+      authors: List<String>.from(volumeInfo['authors'] ?? []),
+      categories: List<String>.from(volumeInfo['categories'] ?? []),
+      thumbnail: volumeInfo['imageLinks'] != null
+          ? volumeInfo['imageLinks']['thumbnail']
+          : '',
+      description: volumeInfo['description'] ?? '',
+      isEbook: saleInfo['isEbook'] ?? false,
+      buyLink: saleInfo['buyLink'] ?? '',
     );
   }
 }

@@ -39,7 +39,8 @@ class _CameraScreenState extends State<CameraScreen> {
       for (var bookJson in items) {
         final Map<String, dynamic> volumeInfo =
             (bookJson as Map<String, dynamic>)['volumeInfo'];
-        Book book = Book.fromJson(volumeInfo);
+        final Map<String, dynamic> saleInfo = (bookJson)['saleInfo'];
+        Book book = Book.fromJson(volumeInfo, saleInfo);
         books.add(book);
       }
     }
