@@ -4,6 +4,7 @@ import 'package:book_recognizer_frontend/screens/results.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
 class CameraScreen extends StatefulWidget {
@@ -28,6 +29,12 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _navigateToResults(String responseBody) async {
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/response.json');
+    await file.writeAsString(responseBody);
+
+    print('Server response written to ${file.path}');
+
     final List<dynamic> responseList = json.decode(responseBody);
 
     List<Book> books = [];
