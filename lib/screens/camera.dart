@@ -21,11 +21,13 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isLoading = false;
 
   String getBackendUrl() {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000';
-    } else {
-      return 'http://localhost:8000';
-    }
+    // if (Platform.isAndroid) {
+    //   return 'http://10.0.2.2:8000';
+    // } else {
+    //   return 'http://localhost:8000';
+    // }
+
+    return 'http://18.135.170.219:8000';
   }
 
   Future<void> _navigateToResults(String responseBody) async {
