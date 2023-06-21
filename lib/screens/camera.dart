@@ -96,13 +96,16 @@ class _CameraScreenState extends State<CameraScreen> {
     final String apiUrl = '$backendUrl/books/recognize';
 
     // Prepare the image file for upload
-    final imageBytes = await _image!.readAsBytes();
-    final base64Image = base64Encode(imageBytes);
+    List<int> imageBytes = _image!.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
 
     // Send the image to the backend API
-    final response = await http.post(
+    var response = await http.post(
       Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        "Accept": "application/json"
+      },
       body: json.encode({'image': base64Image}),
     );
 
