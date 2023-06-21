@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
-import 'package:book_recognizer_frontend/screens/preferences.dart';
-import 'package:book_recognizer_frontend/screens/camera.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:book_recognizer_frontend/screens/camera.dart';
+import 'package:book_recognizer_frontend/screens/preferences.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -35,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     //   return 'http://localhost:8000';
     // }
 
-    return 'http://18.135.170.219:8000';
+    return 'http://18.135.170.219:80';
   }
 
   void _showSuccessSnackBar(String message) {
@@ -105,9 +106,6 @@ class _AuthScreenState extends State<AuthScreen> {
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         Map<String, dynamic> responseBody = json.decode(response.body);
         String accessToken = responseBody['access_token'];
@@ -146,9 +144,6 @@ class _AuthScreenState extends State<AuthScreen> {
           'book_preferences': <String>[],
         }),
       );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (response.statusCode == 200 || response.statusCode == 201) {

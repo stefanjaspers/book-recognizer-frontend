@@ -1,5 +1,6 @@
-import 'package:book_recognizer_frontend/models/book.dart';
 import 'package:flutter/material.dart';
+
+import 'package:book_recognizer_frontend/models/book.dart';
 import 'package:book_recognizer_frontend/screens/book_details.dart';
 
 class ResultsScreen extends StatelessWidget {

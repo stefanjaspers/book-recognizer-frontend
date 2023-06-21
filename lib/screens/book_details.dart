@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:book_recognizer_frontend/models/book.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:book_recognizer_frontend/models/book.dart';
 
 class BookDetailsScreen extends StatelessWidget {
   final Book book;

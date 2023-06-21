@@ -1,11 +1,11 @@
-import 'package:book_recognizer_frontend/screens/camera.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:book_recognizer_frontend/providers/genres_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:io' show Platform;
+
+import 'package:book_recognizer_frontend/providers/genres_provider.dart';
+import 'package:book_recognizer_frontend/screens/camera.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -37,7 +37,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     //   return 'http://localhost:8000';
     // }
 
-    return 'http://18.135.170.219:8000';
+    return 'http://18.135.170.219:80';
   }
 
   Future<void> _savePreferences() async {
@@ -78,7 +78,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CameraScreen()),
+          MaterialPageRoute(builder: (context) => const CameraScreen()),
         );
       } else {
         // Handle error response

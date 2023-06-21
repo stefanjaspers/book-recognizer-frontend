@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import 'package:book_recognizer_frontend/models/book.dart';
 import 'package:book_recognizer_frontend/screens/results.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -27,7 +28,7 @@ class _CameraScreenState extends State<CameraScreen> {
     //   return 'http://localhost:8000';
     // }
 
-    return 'http://18.135.170.219:8000';
+    return 'http://18.135.170.219:80';
   }
 
   Future<void> _navigateToResults(String responseBody) async {
@@ -64,9 +65,7 @@ class _CameraScreenState extends State<CameraScreen> {
     setState(() {
       if (pickedFile != null) {
         _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
+      } else {}
     });
   }
 
@@ -77,15 +76,12 @@ class _CameraScreenState extends State<CameraScreen> {
     setState(() {
       if (pickedFile != null) {
         _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
+      } else {}
     });
   }
 
   Future<void> _sendImageToBackend() async {
     if (_image == null) {
-      print('No image to send.');
       return;
     }
 
