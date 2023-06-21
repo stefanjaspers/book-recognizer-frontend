@@ -29,8 +29,10 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _navigateToResults(String responseBody) async {
-    final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/response.json');
+    Directory directory = await getTemporaryDirectory();
+    String path = directory.path;
+
+    File file = File('$path/response.json');
     await file.writeAsString(responseBody);
 
     print('Server response written to ${file.path}');
@@ -105,6 +107,8 @@ class _CameraScreenState extends State<CameraScreen> {
     // Prepare the image file for upload
     final imageBytes = await _image!.readAsBytes();
     final base64Image = base64Encode(imageBytes);
+
+    print('sending api request to: $apiUrl');
 
     // Send the image to the backend API
     final response = await http.post(
