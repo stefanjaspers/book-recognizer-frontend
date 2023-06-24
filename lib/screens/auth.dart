@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -30,13 +31,13 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredPassword = '';
 
   String getBackendUrl() {
-    // if (Platform.isAndroid) {
-    //   return 'http://10.0.2.2:8000';
-    // } else {
-    //   return 'http://localhost:8000';
-    // }
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
 
-    return 'http://18.135.170.219:80';
+    // return 'http://18.135.170.219:80';
   }
 
   void _showSuccessSnackBar(String message) {

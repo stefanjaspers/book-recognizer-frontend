@@ -22,16 +22,18 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isLoading = false;
 
   String getBackendUrl() {
-    // if (Platform.isAndroid) {
-    //   return 'http://10.0.2.2:8000';
-    // } else {
-    //   return 'http://localhost:8000';
-    // }
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
 
-    return 'http://18.135.170.219:80';
+    // return 'http://18.135.170.219:80';
   }
 
-  Future<void> _navigateToResults(String responseBody) async {
+  void _navigateToResults(String responseBody) {
+    NavigatorState navigator = Navigator.of(context);
+
     final List<dynamic> responseList = json.decode(responseBody);
 
     List<Book> books = [];
@@ -51,7 +53,7 @@ class _CameraScreenState extends State<CameraScreen> {
       }
     }
 
-    Navigator.of(context).push(
+    navigator.push(
       MaterialPageRoute(
         builder: (context) => ResultsScreen(books: books),
       ),
