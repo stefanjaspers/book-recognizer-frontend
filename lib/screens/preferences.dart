@@ -57,15 +57,15 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   }
 
   String getBackendUrl() {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8000';
-    } else {
-      return 'http://localhost:8000';
-    }
+    // if (Platform.isAndroid) {
+    //   return 'http://10.0.2.2:8000';
+    // } else {
+    //   return 'http://localhost:8000';
+    // }
 
     // return 'http://192.168.178.57:8000';
 
-    // return 'http://18.135.170.219:80';
+    return 'http://18.135.170.219:80';
   }
 
   Future<void> _savePreferences() async {
