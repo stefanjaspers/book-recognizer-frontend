@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import 'package:book_recognizer_frontend/models/book.dart';
+import 'package:book_recognizer_frontend/screens/auth.dart';
 import 'package:book_recognizer_frontend/screens/results.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -22,15 +24,39 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _isLoading = false;
 
   String getBackendUrl() {
-    // if (Platform.isAndroid) {
-    //   return 'http://10.0.2.2:8000';
-    // } else {
-    //   return 'http://localhost:8000';
-    // }
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
 
-    return 'http://192.168.178.57:8000';
+    // return 'http://192.168.178.57:8000';
 
     // return 'http://18.135.170.219:80';
+  }
+
+  Future<void> _logout() async {
+    // Remove the access token from the secure storage
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'access_token');
+
+    // Navigate the user back to the AuthScreen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (BuildContext context) => const AuthScreen(),
+      ),
+    );
+
+    _showSuccessSnackBar("Successfully logged out.");
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color.fromARGB(255, 71, 200, 71),
+      ),
+    );
   }
 
   void _navigateToResults(String responseBody) {
@@ -122,9 +148,14 @@ class _CameraScreenState extends State<CameraScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Camera Screen'),
-        automaticallyImplyLeading: false,
-      ),
+          title: const Text('Camera Screen'),
+          automaticallyImplyLeading: false,
+          actions: <Widget>[
+            IconButton(
+                onPressed: _logout,
+                tooltip: "Logout",
+                icon: const Icon(Icons.logout))
+          ]),
       body: Center(
         child: _isLoading
             ? const Column(

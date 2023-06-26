@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:book_recognizer_frontend/screens/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -31,14 +32,38 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         .toList();
   }
 
-  String getBackendUrl() {
-    // if (Platform.isAndroid) {
-    //   return 'http://10.0.2.2:8000';
-    // } else {
-    //   return 'http://localhost:8000';
-    // }
+  Future<void> _logout() async {
+    // Remove the access token from the secure storage
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'access_token');
 
-    return 'http://192.168.178.57:8000';
+    // Navigate the user back to the AuthScreen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (BuildContext context) => const AuthScreen(),
+      ),
+    );
+
+    _showSuccessSnackBar("Successfully logged out.");
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color.fromARGB(255, 71, 200, 71),
+      ),
+    );
+  }
+
+  String getBackendUrl() {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    } else {
+      return 'http://localhost:8000';
+    }
+
+    // return 'http://192.168.178.57:8000';
 
     // return 'http://18.135.170.219:80';
   }
@@ -99,21 +124,27 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       key: _scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Set Book Preferences"),
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-        ),
+            title: const Text("Set Book Preferences"),
+            automaticallyImplyLeading: false,
+            actions: <Widget>[
+              IconButton(
+                  onPressed: _logout,
+                  tooltip: "Logout",
+                  icon: const Icon(Icons.logout))
+            ]),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                enabled: false,
-                decoration: InputDecoration(
-                  labelText: 'Extra explanation',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      color: Theme.of(context).colorScheme.secondary, width: 2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'Below is a list of all available book genres. Feel free to select at least 3 preferences, as this will help us recommend books that fit your style best. You can also use the search function to find a genre that suits you.',
                 ),
               ),
               const SizedBox(height: 16),
@@ -168,7 +199,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           ),
         ),
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(14.0),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(

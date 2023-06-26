@@ -76,20 +76,17 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Future<bool> _hasPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? preferences = prefs.getStringList('book_preferences');
-    return preferences != null && preferences.isNotEmpty;
-  }
-
   Future<void> _saveEmptyPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('book_preferences', []);
   }
 
   void _submit() async {
+    FocusScope.of(context).requestFocus(FocusNode());
+
     final isValid = _form.currentState!.validate();
     final backendUrl = getBackendUrl();
+    String bearerToken;
 
     if (!isValid) {
       return;
@@ -113,16 +110,23 @@ class _AuthScreenState extends State<AuthScreen> {
         Map<String, dynamic> responseBody = json.decode(response.body);
         String accessToken = responseBody['access_token'];
         await storage.write(key: 'access_token', value: accessToken);
+        bearerToken = accessToken;
 
-        bool hasPreferences = await _hasPreferences();
+        var preferencesResponse = await http
+            .get(Uri.parse('$backendUrl/user/book_preferences'), headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $bearerToken',
+        });
 
-        if (!hasPreferences) {
-          _showSuccessSnackBar(
-              'Logged in for the first time. Please set your preferences.');
-          await _navigateToPreferences();
+        // If server returns a 200 OK response, parse the JSON.
+        List<dynamic> preferencesResponseBody =
+            json.decode(preferencesResponse.body);
+
+        if (preferencesResponseBody.isEmpty) {
+          _navigateToPreferences();
         } else {
-          _showSuccessSnackBar('Logged in successfully.');
-          await _navigateToCamera();
+          print(preferencesResponse.body);
+          _navigateToCamera();
         }
       } else {
         String errorMessage;
@@ -131,7 +135,6 @@ class _AuthScreenState extends State<AuthScreen> {
         } else {
           errorMessage = 'Unknown error occurred while logging in.';
         }
-
         _showErrorSnackBar(errorMessage);
       }
     } else {
@@ -149,7 +152,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await _saveEmptyPreferences(); // Add this line
+        await _saveEmptyPreferences();
         _showSuccessSnackBar(
             'Account created successfully. Please log in to continue.');
         Future.delayed(Duration.zero, () {
@@ -207,6 +210,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               decoration: const InputDecoration(
                                   labelText: 'First Name'),
                               keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.sentences,
                               autocorrect: false,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -226,6 +230,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               decoration:
                                   const InputDecoration(labelText: 'Last Name'),
                               keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.sentences,
                               autocorrect: false,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
