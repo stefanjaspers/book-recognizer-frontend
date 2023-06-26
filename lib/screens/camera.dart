@@ -125,8 +125,15 @@ class _CameraScreenState extends State<CameraScreen> {
     // Replace with your backend API URL
     final String apiUrl = '$backendUrl/books/recognize';
 
+    // Decompress image to speed up AI
+    final compressedFile = await FlutterImageCompress.compressAndGetFile(
+      _image!.path, // source file
+      '${_image!.path}_compressed.jpg', // target path
+      quality: 50, // quality of the compressed image (0-100)
+    );
+
     // Prepare the image file for upload
-    final imageBytes = await _image!.readAsBytes();
+    final imageBytes = await compressedFile!.readAsBytes();
     final base64Image = base64Encode(imageBytes);
 
     // Send the image to the backend API
