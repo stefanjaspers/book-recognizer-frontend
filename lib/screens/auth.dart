@@ -37,6 +37,8 @@ class _AuthScreenState extends State<AuthScreen> {
       return 'http://localhost:8000';
     }
 
+    // return 'http://192.168.178.57:8000';
+
     // return 'http://18.135.170.219:80';
   }
 
@@ -147,16 +149,14 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          await _saveEmptyPreferences(); // Add this line
-          _showSuccessSnackBar(
-              'Account created successfully. Please log in to continue.');
-          Future.delayed(Duration.zero, () {
-            setState(() {
-              _isLogin = true;
-            });
+        await _saveEmptyPreferences(); // Add this line
+        _showSuccessSnackBar(
+            'Account created successfully. Please log in to continue.');
+        Future.delayed(Duration.zero, () {
+          setState(() {
+            _isLogin = true;
           });
-        }
+        });
       } else {
         String errorMessage = 'Unknown error occurred while creating account.';
         if (response.statusCode == 400) {
