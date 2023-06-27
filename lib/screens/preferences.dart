@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:book_recognizer_frontend/screens/auth.dart';
 import 'package:flutter/material.dart';
