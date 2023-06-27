@@ -125,15 +125,8 @@ class _CameraScreenState extends State<CameraScreen> {
     // Replace with your backend API URL
     final String apiUrl = '$backendUrl/books/recognize';
 
-    // Decompress image to speed up AI
-    final compressedFile = await FlutterImageCompress.compressAndGetFile(
-      _image!.path, // source file
-      '${_image!.path}_compressed.jpg', // target path
-      quality: 50, // quality of the compressed image (0-100)
-    );
-
     // Prepare the image file for upload
-    final imageBytes = await compressedFile!.readAsBytes();
+    final imageBytes = await _image!.readAsBytes();
     final base64Image = base64Encode(imageBytes);
 
     // Send the image to the backend API
@@ -142,9 +135,6 @@ class _CameraScreenState extends State<CameraScreen> {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'image': base64Image}),
     );
-
-    print('HTTP response status code: ${response.statusCode}');
-    print('HTTP response body: ${response.body}');
 
     setState(() {
       _isLoading = false;
@@ -182,7 +172,9 @@ class _CameraScreenState extends State<CameraScreen> {
                 : Image.file(_image!),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isLoading ? null : _getImage,
+        onPressed: _isLoading
+            ? null
+            : _getImage, // Disable the button when _isLoading is true
         tooltip: 'Pick Image',
         foregroundColor:
             _isLoading ? Colors.grey : Theme.of(context).colorScheme.primary,
