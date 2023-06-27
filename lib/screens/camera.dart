@@ -182,9 +182,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 : Image.file(_image!),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isLoading
-            ? null
-            : _getImage, // Disable the button when _isLoading is true
+        onPressed: _isLoading ? null : _getImage,
         tooltip: 'Pick Image',
         foregroundColor:
             _isLoading ? Colors.grey : Theme.of(context).colorScheme.primary,
